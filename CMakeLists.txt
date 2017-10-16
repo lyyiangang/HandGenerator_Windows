@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(HandGenerator)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+set(CMAKE_RUNTIME_CMAKE_CURRENT_LIST_DIR_DEBUG "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_RUNTIME_CMAKE_CURRENT_LIST_DIR_RELEASE "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_LIBRARY_CMAKE_CURRENT_LIST_DIR_DEBUG "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_LIBRARY_CMAKE_CURRENT_LIST_DIR_RELEASE "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_ARCHIVE_CMAKE_CURRENT_LIST_DIR_DEBUG "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_ARCHIVE_CMAKE_CURRENT_LIST_DIR_RELEASE "${CMAKE_CURRENT_LIST_DIR}")
+
+# First for the generic no-config case (e.g. with mingw)
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${youroutputdirectory}/bin )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${youroutputdirectory}/bin )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${youroutputdirectory}/bin )
+# Second, for multi-config builds (e.g. msvc)
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_CURRENT_LIST_DIR}/bin )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_CURRENT_LIST_DIR}/bin )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_CURRENT_LIST_DIR}/bin )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
+
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include/)
+
+add_library(HandGenerator SHARED
+	${CMAKE_CURRENT_LIST_DIR}/src/HandGenerator.cpp 
+	${CMAKE_CURRENT_LIST_DIR}/src/HandGenerator.h
+	${CMAKE_CURRENT_LIST_DIR}/src/Hand.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Hand.h
+	${CMAKE_CURRENT_LIST_DIR}/src/HandStructs.h
+)
+
+add_executable(HandGenerator_Test
+	${CMAKE_CURRENT_LIST_DIR}/src/HandGenerator_Test.cpp
+)
+
+target_link_libraries(HandGenerator
+	${CMAKE_CURRENT_LIST_DIR}/lib/assimp.lib
+	${CMAKE_CURRENT_LIST_DIR}/lib/glew32.lib
+	${CMAKE_CURRENT_LIST_DIR}/lib/freeglut.lib
+)
+
+target_link_libraries(HandGenerator_Test
+	${CMAKE_CURRENT_LIST_DIR}/bin/HandGenerator.lib
+)

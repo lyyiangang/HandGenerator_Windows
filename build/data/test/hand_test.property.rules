@@ -1,0 +1,11 @@
+finger5joint2 1 w finger5joint1 1
+finger5joint1 1 w finger5joint2 1
+finger2joint2 1 w finger2joint1 1
+finger2joint1 1 w finger2joint2 1
+finger1joint2 1 w finger1joint1 1
+finger1joint1 1 w finger1joint2 1
+finger1joint1 0 w finger2joint1 0
+finger2joint1 0 w finger1joint1 0
+finger2joint1 0 w finger1joint1 0
+finger2joint1 1 w finger5joint1 1
+finger5joint1 1 w finger1joint1 1
