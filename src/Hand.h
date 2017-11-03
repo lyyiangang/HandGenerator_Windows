@@ -76,6 +76,8 @@ public:
 	**/
 	void Render(int w, int h, float r_x, float r_y, float r_z, bool cont_rot, float d);
 
+    void DrawDepthData(int w, int h);
+
 	/**
 	*	\brief Sets the joint to the position
 	*	\param jn Integer specifing wich joint to be set
@@ -93,6 +95,8 @@ public:
 	**/
 	void SetJoint(int jn, int pc, float x, float y, float z);
 
+    void InitAllJoints();
+
 	/**
 	*	\brief Gets the rotations of the position of the joint
 	*	\param jn Integer specifing wich joint to be set
@@ -101,7 +105,7 @@ public:
 	*	\param y Float reference of the rotation around the y-axis
 	*	\param z Float reference of the rotation around the z-axis
 	**/
-	void GetJoint(int jn, int pc, float &x, float &y, float &z);
+	void GetJointRotation(int jn, int pc, float &x, float &y, float &z);
 
 	/**
 	*	\brief Gets the positions of the joint

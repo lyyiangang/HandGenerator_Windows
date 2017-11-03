@@ -214,7 +214,6 @@
       <ImportLibrary>E:/code/BOE/solution_code/HandGenerator_Windows/bin/HandGenerator.lib</ImportLibrary>
       <ProgramDataBaseFile>E:/code/BOE/solution_code/HandGenerator_Windows/bin/HandGenerator.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
-
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -586,16 +585,30 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandGenerator.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClInclude Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandGenerator.h" />
     <ClCompile Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\Hand.cpp" />
     <ClInclude Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\Hand.h" />
     <ClInclude Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandStructs.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="E:\code\BOE\solution_code\HandGenerator_Windows\build\ZERO_CHECK.vcxproj">
       <Project>{C89EFAF6-A8DA-3A1F-8FA1-FE9E19AAC1C0}</Project>
       <Name>ZERO_CHECK</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\hand_texture_image.bmp" />
+    <Image Include="data\_hand_texture_image.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\hand.property" />
+    <None Include="data\hand.property.rules" />
+    <None Include="data\shader.frag" />
+    <None Include="data\shader.vert" />
+    <None Include="data\shader_depth.frag" />
+    <None Include="data\shader_depth.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,6 +27,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <algorithm>
+#include "../build/Utils.h"
 
 /** Specify how much bone info to accumulate per vertex
 *	IT STORES 4 COUPLE (WEIGHT-ID) FOR EACH BONES_INFO GIVEN
@@ -263,23 +265,15 @@ bool LoadData(std::string model_file, char* property_file, char* texture_path, b
 	for (int i = 0; i < Bones.size(); i++)
 	{
 		ff.push_back((int)Bones[i].temp_vec.size());
-
-
-
 		std::vector<float> l;
-
 		bool r = false;
-
 		Bones[i].data[0].Weights[1] = 1.0f;
 		for (int j = 1; j < 4; j++)
 			Bones[i].data[0].Weights[j] = 0.0f;
-
 		if (r)
 		{
 			l.push_back(1.0f);
 		}
-
-
 	}
 	std::sort(ff.begin(), ff.end());
 	for (int i = 0; i < Bones.size(); i++)
@@ -857,11 +851,15 @@ bool Hand::Init(HandParameters parameters)
 void Hand::Render(int w, int h, float r_x, float r_y, float r_z, bool cont_rot, float d)
 {   
 	//std::cout << "Render1" << std::endl;
+    glEnable(GL_SCISSOR_TEST);
+    float scale = 1.0;//0.5 for depth export
+    glViewport(0, 0, (GLsizei)(scale* w), (GLsizei)(scale*h));
+    glScissor(0, 0, (GLsizei)(scale* w), (GLsizei)(scale*h));
+    glClearColor(0.5, 0.5, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glUseProgram(shader_id);
-	glEnable(GL_TEXTURE_2D);
+    glUseProgram(shader_id);
+    glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_ALPHA_TEST);
 
@@ -874,8 +872,6 @@ void Hand::Render(int w, int h, float r_x, float r_y, float r_z, bool cont_rot, 
 		ComputeBoneAnimation(runningTime, Transforms);
 	for (int i = 0 ; i < Transforms.size() ; i++) 
 		glUniformMatrix4fv(shader_bones_loc[i], 1, GL_TRUE, (const GLfloat*)Transforms[i]);
-
-	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 
 	Matrix4f::PersProjInfo persProjInfo;
 	persProjInfo.FOV = param.render_FOV;
@@ -912,11 +908,102 @@ void Hand::Render(int w, int h, float r_x, float r_y, float r_z, bool cont_rot, 
 		glLoadIdentity();
 		RenderBones();
 	}
-
+    {
+        //darw axis
+        glColor3b(255, 125, 0);
+        glPushMatrix();
+        glBegin(GL_LINES);
+        glVertex3f(-100, 0, 0);
+        glVertex3f(100, 0, 0);
+        glEnd();
+        glBegin(GL_LINES);
+        glVertex3f(0, -100, 0);
+        glVertex3f(0, 100, 0);
+        glEnd();
+        glBegin(GL_LINES);
+        glVertex3f(0, 0, -100);
+        glVertex3f(0, 0, 100);
+        glEnd();
+        glPopMatrix();
+    }
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
+    glDisable(GL_SCISSOR_TEST);
 }
+
+void Hand::DrawDepthData(int w, int h)
+{
+    const int imgSize[2] = { 300,300 };
+    float camPos[3] = { 0,0,10 };
+    Matrix4f::PersProjInfo dCamPersInfo;
+    dCamPersInfo.FOV = 60;
+    dCamPersInfo.Height = (float)imgSize[0];
+    dCamPersInfo.Width = (float)imgSize[1];
+    dCamPersInfo.zNear = 0.001;
+    dCamPersInfo.zFar = 40;
+
+    int projectStartPt[2] = { 0.5* w + 5, 0 };
+    //plot projection view
+    glEnable(GL_SCISSOR_TEST);
+    glViewport(projectStartPt[0], projectStartPt[1], imgSize[0], imgSize[1]);
+    glScissor(projectStartPt[0], projectStartPt[1], imgSize[0], imgSize[1]);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(shader_id);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_ALPHA_TEST);
+
+    std::vector<Matrix4f> Transforms;
+    ComputeBoneStatic(Transforms);
+    for (int i = 0; i < Transforms.size(); i++)
+        glUniformMatrix4fv(shader_bones_loc[i], 1, GL_TRUE, (const GLfloat*)Transforms[i]);
+
+    Matrix4f matProjection = Matrix4f::MakeProjectionMatrix(dCamPersInfo);
+    auto  matModel= Matrix4f::MakeRotationMatrix(0.0f, 0.0f, -90.0f);
+    auto matTranslation = Matrix4f::MakeTranslationMatrix(camPos[0],camPos[1],camPos[2]);
+    auto matModelViewProj = matProjection * matTranslation * matModel;
+
+    glUniformMatrix4fv(shader_modelViewProj_loc, 1, GL_FALSE, (const GLfloat*)matModelViewProj);
+    glBindVertexArray(ogl_id_general_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ogl_id_texture);
+    glDrawElementsBaseVertex(GL_TRIANGLES, mesh_indices_count, GL_UNSIGNED_INT, (void*)(sizeof(int) * mesh_base_index), mesh_base_vertex);
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_SCISSOR_TEST);
+
+    //plot depth
+    int depthViewStartPt[2] = { projectStartPt[0],projectStartPt[1] + h*0.5 + 5 };
+    glEnable(GL_SCISSOR_TEST);
+    glViewport(depthViewStartPt[0], depthViewStartPt[1], imgSize[0], imgSize[1]);
+    glScissor(depthViewStartPt[0], depthViewStartPt[1], imgSize[0], imgSize[1]);
+    glClearColor(0.2,0.2,0.2, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    std::vector<float> depthBuff(imgSize[0] * imgSize[1], 0);
+    glReadPixels(projectStartPt[0], projectStartPt[1], imgSize[0],imgSize[1], GL_DEPTH_COMPONENT, GL_FLOAT, depthBuff.data());
+    std::transform(depthBuff.begin(), depthBuff.end(), depthBuff.begin(), [&](float val) {
+        return dCamPersInfo.zNear*dCamPersInfo.zFar / (dCamPersInfo.zFar - val * (dCamPersInfo.zFar - dCamPersInfo.zNear));
+    });
+    typedef struct Pixel_t { unsigned char rgb[3]; } Pixel;
+    std::vector<Pixel> depthGrayImg(imgSize[0] * imgSize[1]);
+    for (int ii = 0; ii < depthBuff.size(); ++ii)
+    {
+        unsigned char grayVal = Utils::Clamp((depthBuff[ii] - dCamPersInfo.zNear) / (dCamPersInfo.zFar - dCamPersInfo.zNear) * 256, 0, 255);
+        depthGrayImg[ii].rgb[0] = grayVal; depthGrayImg[ii].rgb[1] = grayVal; depthGrayImg[ii ].rgb[2] = grayVal;
+    }
+    Utils::DrawImage(&(depthGrayImg.data()->rgb[0]), imgSize);
+    //get rgd data
+    std::vector<unsigned char> rgbBuff(imgSize[0] * imgSize[1]* 3, 0);
+    glReadPixels(projectStartPt[0], projectStartPt[1], imgSize[0], imgSize[1], GL_RGB, GL_UNSIGNED_BYTE, rgbBuff.data());
+    glDisable(GL_SCISSOR_TEST);
+}
+
 void Hand::SetJoint(int jn, int pc)
 {
 	assert(bone_map.find(joints[jn]) != bone_map.end());
@@ -938,9 +1025,21 @@ void Hand::SetJoint(int jn, int pc, float x, float y, float z)
 	//}
 	bone_data[BoneIndex].current_position = pc;
 	bone_to_render = BoneIndex;
-
 }
-void Hand::GetJoint(int jn, int pc, float &x, float &y, float &z)
+
+void Hand::InitAllJoints()
+{
+    for (auto& curBone : bone_data)
+    {
+        curBone.possible_positions[0].impRot = Matrix4f::MakeRotationMatrix(0, 0, 0);
+        curBone.possible_positions[0].imp_rot_x = 0.0f;
+        curBone.possible_positions[0].imp_rot_y = 0.0f;
+        curBone.possible_positions[0].imp_rot_z = 0.0f;
+        curBone.current_position = 0;
+    }
+}
+
+void Hand::GetJointRotation(int jn, int pc, float &x, float &y, float &z)
 {
 	assert(bone_map.find(joints[jn]) != bone_map.end());
 	int BoneIndex = bone_map[joints[jn]];

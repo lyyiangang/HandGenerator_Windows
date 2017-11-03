@@ -27,8 +27,8 @@
 std::string log_global_path = "C:\\am_softwaredata\\data_for_log\\";
 #endif
 
-#define WINDOW_WIDTH_START 400
-#define WINDOW_HEIGHT_START 600
+#define WINDOW_WIDTH_START 800
+#define WINDOW_HEIGHT_START 800
 #define FPS_LIMIT 60
 #define JOINT_COUNT 19
 #define MAX_FILE_DIMENSION_MB 1024
@@ -230,7 +230,7 @@ private:
 	void display(void)
 	{
 		fps_limiter = std::clock();
-
+        glColor3b(22, 33, 44);
 		// If the finger-joint index changes
 		if ((int)tb_index.val != joint_index)
 		{
@@ -244,7 +244,7 @@ private:
 			positions_index = current_pos[joint_index];
 
 			// Get values for the position of the new finger-joint
-			hand.GetJoint(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
+			hand.GetJointRotation(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
 
 			// Update the position trackbar
 			int number_of_positions;
@@ -258,7 +258,7 @@ private:
 		if ((int)tb_pos.val != positions_index)
 		{
 			positions_index = (int)tb_pos.val;
-			hand.GetJoint(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
+			hand.GetJointRotation(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
 			tb_x.UpdatePos();
 			tb_y.UpdatePos();
 			tb_z.UpdatePos();
@@ -276,7 +276,6 @@ private:
 
 		hand.SetJoint(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
 		//}
-
 		hand.Render(w, h, m_x_d, m_y_d, 0.0f, true, m_m_w);
 
 		m_x_d = 0.0f;
@@ -293,7 +292,9 @@ private:
 		glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)hand.GetJointName(joint_index).c_str());
 		glRasterPos2f((float)w - 140.0f, 10.0f);
 		glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)"Positions control:\n'S' to save positions\n'R' to reset position\n'A' to animation mode\n'P' to position mode\n'E' to leave context");
-
+        {//lyy
+          //  hand.DrawDepthData(w, h);
+        }
 		glutSwapBuffers();
 
 		double elapsed_time = (std::clock() - fps_limiter) / (double)CLOCKS_PER_SEC;
@@ -321,7 +322,7 @@ private:
 		case 'r':
 			// Setting all finger-joint current position angles to zero
 			hand.SetJoint(joint_index, positions_index, 0.0f, 0.0f, 0.0f);
-			hand.GetJoint(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
+			hand.GetJointRotation(joint_index, positions_index, tb_x.val, tb_y.val, tb_z.val);
 			tb_x.UpdatePos();
 			tb_y.UpdatePos();
 			tb_z.UpdatePos();
@@ -343,6 +344,16 @@ private:
 			WRL("Exit");
 			glutLeaveMainLoop();
 			break;
+        case '1':
+            WRL("reset all joints");
+            hand.InitAllJoints();
+            for(int ii=0;ii<JOINT_COUNT;++ii)
+                hand.GetJointRotation(ii, 0, tb_x.val, tb_y.val, tb_z.val);
+            tb_x.UpdatePos();
+            tb_y.UpdatePos();
+            tb_z.UpdatePos();
+            break;
+            
 		}
 	}
 	void mouse_move(int x, int y)
@@ -415,7 +426,7 @@ private:
 		tb_index = TrackBar(20.0f, 20.0f, 20.0f, 0.0f, 18.0f, 0.0f, true);
 		tb_pos = TrackBar(110.0f, 300, 10.0f, 0.0f, 1.0f, 0.0f, true);
 		reshape(WINDOW_WIDTH_START, WINDOW_HEIGHT_START);
-		for (int i = 0; i < 19; i++)
+		for (int i = 0; i < JOINT_COUNT; i++)
 			current_pos[i] = 0;
 
 		initiation_ok = true;
@@ -652,7 +663,7 @@ private:
 
 		//// 5: Unbind FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind our texture
-
+       
 		glutSwapBuffers();
 	}
 

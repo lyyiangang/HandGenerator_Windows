@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
 		if (c == '0')
 		{
-			hg.render_use_full_model = false;
+			hg.render_use_full_model = true;
 			hg.render_bone_sight = true;
 			hg.setup_vertexShaderPath = "data/shader.vert";
 			hg.setup_fragmentShaderPath = "data/shader.frag";
@@ -85,7 +85,6 @@ int main(int argc, char** argv)
 			hg.general_use_rules = false;
 			hg.setup_model_rules_path = "data/hand.property.rules";
 			hg.setup_modelTexture_path = "data/hand_texture_image.bmp";
-
 			hg.render_near = 0.001f;
 			hg.render_far = 40.0f;
 			//hg.setup_modelTexture_path = "data/hand_texture_image_colored.bmp";

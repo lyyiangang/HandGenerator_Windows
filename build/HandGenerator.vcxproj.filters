@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandGenerator.cpp">
@@ -7,6 +7,7 @@
     <ClCompile Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\Hand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandGenerator.h">
@@ -18,6 +19,7 @@
     <ClInclude Include="E:\code\BOE\solution_code\HandGenerator_Windows\src\HandStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\code\BOE\solution_code\HandGenerator_Windows\CMakeLists.txt" />
@@ -29,5 +31,17 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{74E64ED2-4CD1-3340-88E7-A89CA43312CE}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\_hand_texture_image.bmp" />
+    <Image Include="data\hand_texture_image.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\hand.property" />
+    <None Include="data\hand.property.rules" />
+    <None Include="data\shader.frag" />
+    <None Include="data\shader.vert" />
+    <None Include="data\shader_depth.frag" />
+    <None Include="data\shader_depth.vert" />
   </ItemGroup>
 </Project>
