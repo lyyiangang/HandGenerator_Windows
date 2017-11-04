@@ -43,5 +43,8 @@
     <None Include="data\shader.vert" />
     <None Include="data\shader_depth.frag" />
     <None Include="data\shader_depth.vert" />
+    <None Include="data\test\hand_test.property">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
